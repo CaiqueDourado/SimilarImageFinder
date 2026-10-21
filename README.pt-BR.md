@@ -93,6 +93,23 @@ Os números vêm de fotos sintéticas; fotos reais têm textura e sombra. Rode o
 
 <p align="center"><img src="docs/img/phash-steps.pt-BR.png" alt="Passos do pHash: foto, 32x32 em cinza, 8x8 frequências mais baixas da DCT, bits acima da mediana" width="900"></p>
 
+```mermaid
+flowchart TD
+    A["Leitura da imagem<br/>JPEG, PNG, WebP…"] --> B["Imagem em pé e opaca<br/>orientação EXIF,<br/>transparência sobre branco"]
+    B --> C["Tons de cinza<br/>luma BT.601"]
+    C --> T{"trim()?"}
+    T -- sim --> T2["Remove a<br/>borda uniforme"] --> D
+    T -- não --> D["Reduz a 32×32<br/>média exata por área"]
+    D --> E["DCT<br/>fica com as 8×8<br/>frequências mais baixas"]
+    E --> F["Mediana dos<br/>64 valores"]
+    F --> G["Hash de 64 bits<br/>1 = acima da mediana"]
+    G --> H{"Distância de Hamming<br/>até outro hash"}
+    H -- "0–6 bits" --> S["Mesma foto"]
+    H -- "20+ bits" --> N["Fotos diferentes"]
+```
+
+O catálogo de 2019 usava um caminho mais curto: reduzir a **16×16**, converter para cinza e calcular o **SHA-256** do resultado (`exact_signature`). Sem a DCT e a mediana, ele só reconhece pixels idênticos.
+
 A imagem é reduzida a 32×32 em cinza com média exata por área. Uma transformada discreta do cosseno separa as formas gerais dos detalhes, e só as 8×8 frequências mais baixas ficam. Cada uma vira um bit: 1 se estiver acima da mediana delas. Redimensionar e comprimir mudam os detalhes, não a forma geral, então os bits quase não mudam. Todos os passos usam inteiros, inclusive a DCT, a partir de uma tabela de cossenos arredondada. A especificação completa, a mesma que as duas implementações seguem, está em [spec/ALGORITHMS.md](spec/ALGORITHMS.md).
 
 ## O que tem

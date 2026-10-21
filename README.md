@@ -93,6 +93,23 @@ These numbers come from synthetic photos; real photos have textures and shadows.
 
 <p align="center"><img src="docs/img/phash-steps.png" alt="pHash steps: photo, 32x32 gray, 8x8 lowest DCT frequencies, bits above the median" width="900"></p>
 
+```mermaid
+flowchart TD
+    A["Read the image<br/>JPEG, PNG, WebP…"] --> B["Upright and opaque<br/>EXIF orientation,<br/>transparency on white"]
+    B --> C["Grayscale<br/>BT.601 luma"]
+    C --> T{"trim()?"}
+    T -- yes --> T2["Remove the<br/>uniform border"] --> D
+    T -- no --> D["Shrink to 32×32<br/>exact area average"]
+    D --> E["DCT<br/>keep the 8×8<br/>lowest frequencies"]
+    E --> F["Median of<br/>the 64 values"]
+    F --> G["64-bit hash<br/>1 = above the median"]
+    G --> H{"Hamming distance<br/>to another hash"}
+    H -- "0–6 bits" --> S["Same picture"]
+    H -- "20+ bits" --> N["Different pictures"]
+```
+
+The 2019 catalog used a shorter path: shrink to **16×16**, grayscale, and **SHA-256** of the result (`exact_signature`). It skips the DCT and the median, so it only matches identical pixels.
+
 The image is shrunk to 32×32 gray with an exact area average. A discrete cosine transform separates coarse shapes from fine detail, and only the 8×8 lowest frequencies are kept. Each one becomes a bit: 1 if it is above their median. Resizing and compression change the details, not the coarse shape, so the bits barely move. Every step uses integers, the DCT included, from a rounded cosine table. The full specification, the one both implementations follow, is in [spec/ALGORITHMS.md](spec/ALGORITHMS.md).
 
 ## What is inside
