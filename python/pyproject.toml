@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "similar-image-finder"
+version = "0.1.0"
+description = "Find duplicate and near-duplicate images with perceptual hashes (aHash, dHash, pHash), an exact search index and a generic-image detector. Same results as the .NET version."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Caique Dourado" }]
+keywords = ["image", "hash", "perceptual-hash", "phash", "dhash", "ahash", "duplicates", "deduplication", "near-duplicate"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = ["numpy>=1.23", "Pillow>=9.4"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+similar-image-finder = "similar_image_finder.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/CaiqueDourado/SimilarImageFinder"
+Issues = "https://github.com/CaiqueDourado/SimilarImageFinder/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/similar_image_finder"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>SimilarImageFinder.SkiaSharp</PackageId>
+    <Description>Loads image files (JPEG, PNG, GIF, WebP, BMP...) into SimilarImageFinder with SkiaSharp, applying the EXIF orientation and compositing transparency on white. On Linux also reference SkiaSharp.NativeAssets.Linux.NoDependencies.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>SimilarImageFinder</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimilarImageFinder\SimilarImageFinder.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>

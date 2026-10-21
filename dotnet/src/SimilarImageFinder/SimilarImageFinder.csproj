@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>SimilarImageFinder</PackageId>
+    <Description>Find duplicate and near-duplicate images with perceptual hashes (aHash, dHash, pHash), an exact multi-index search over millions of hashes and a generic-image detector. Works on decoded pixels with zero dependencies; results match the Python package bit for bit. Use SimilarImageFinder.SkiaSharp to load image files.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>
