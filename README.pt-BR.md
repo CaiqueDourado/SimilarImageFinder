@@ -1,4 +1,4 @@
-# SimilarImageFinder
+# SimilarImageFinder: hash perceptual de imagens em Python e .NET
 
 [![Python](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/python.yml/badge.svg)](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/python.yml)
 [![.NET](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/dotnet.yml)
@@ -8,7 +8,7 @@
 
 [Read in English](README.md)
 
-**Encontra imagens duplicadas e quase duplicadas, em especial fotos de produto.** Hashes perceptuais (aHash, dHash, pHash), remoção de borda, um índice de busca exata para milhões de hashes e um detector de imagens genéricas. Um algoritmo, duas implementações: **Python e .NET devolvem os mesmos bits** para os mesmos pixels, conferido por vetores de teste compartilhados.
+**Encontra imagens duplicadas e quase duplicadas, em especial fotos de produto, com hash perceptual de imagens (perceptual image hashing).** Hashes perceptuais (aHash, dHash, pHash), remoção de borda, um índice de busca exata para milhões de hashes e um detector de imagens genéricas. Um algoritmo, duas implementações: **Python e .NET devolvem os mesmos bits** para os mesmos pixels, conferido por vetores de teste compartilhados.
 
 ```python
 from similar_image_finder import perceptual_hash
@@ -30,6 +30,19 @@ var distancia = a - b;
 similar-image-finder dupes ./fotos -r --max-distance 6 --trim > grupos.csv
 ```
 
+## O que é hash perceptual de imagens
+
+Um hash criptográfico (MD5, SHA-256) responde "esses dois arquivos são idênticos?": mude um pixel e o hash muda por inteiro. Um **hash perceptual** responde "essas duas imagens parecem iguais?". Ele reduz a foto à sua estrutura geral (uma versão minúscula em cinza, ou as frequências mais baixas) e escreve essa estrutura como uma sequência curta de bits, em geral 64. Duas cópias da mesma foto, redimensionadas, recomprimidas ou com brilho alterado, ficam com hashes que diferem em poucos bits; fotos diferentes diferem em muitos. Comparar imagens passa a ser contar bits diferentes (a distância de Hamming), o que é barato o bastante para milhões de imagens.
+
+| | Hash criptográfico (SHA-256) | Hash perceptual (pHash) |
+|---|---|---|
+| Mesmo arquivo | igual | igual |
+| Mesma foto, redimensionada ou recomprimida | totalmente diferente | poucos bits de diferença |
+| Fotos diferentes | totalmente diferente | muitos bits de diferença |
+| Uso | integridade, cópias exatas | quase duplicadas, busca reversa de imagens, casamento de catálogo |
+
+Esta biblioteca implementa os três hashes perceptuais clássicos: **aHash** (média), **dHash** (diferença, ou gradiente) e **pHash** (transformada discreta do cosseno), e mede em qual confiar com fotos de produto.
+
 ## De onde veio
 
 Entre 2019 e 2024 eu mantive um catálogo de **114,6 milhões de ofertas de 7.179 lojas brasileiras** ([catalogo-produtos-ecommerce-brasil](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil)). Cada foto de produto foi baixada (85,8 milhões de tarefas de download em 12 a 15 máquinas), reduzida a 16×16 em cinza e passada por SHA-256. A assinatura era uma das chaves que ligavam o mesmo produto em lojas diferentes, e uma imagem presente em mais de 100 produtos era marcada como genérica.
@@ -38,7 +51,7 @@ Ela funcionava para o que conseguia ver: lojas do mesmo grupo servindo o mesmo a
 
 1. **Só reconhecia arquivos idênticos.** O SHA-256 muda por inteiro quando um pixel muda em 1, então uma foto que a loja redimensionou ou recomprimiu ganhava outra assinatura.
 
-   <p align="center"><img src="docs/img/exact-vs-perceptual-hash.pt-BR.png" alt="A mesma foto com 1000 e 300 pixels: SHA-256 diferentes, dHash a 1 bit de distância" width="860"></p>
+   <p align="center"><img src="docs/img/exact-vs-perceptual-hash.pt-BR.png" alt="A mesma foto com 1000 e 300 pixels: SHA-256 diferentes, pHash a 2 bits de distância" width="860"></p>
 
 2. **A assinatura dependia da máquina.** Quando as imagens foram para a AWS e o hash foi calculado de novo, os valores não bateram com os locais. O código antigo passava pelo hash o *arquivo codificado* da miniatura 16×16, cujos bytes podem mudar com a versão do codificador; é a causa mais provável. Aqui todo hash sai dos pixels decodificados, com aritmética inteira, e é o mesmo em qualquer máquina e nas duas linguagens.
 

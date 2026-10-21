@@ -1,4 +1,4 @@
-# SimilarImageFinder
+# SimilarImageFinder: perceptual image hashing for Python and .NET
 
 [![Python](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/python.yml/badge.svg)](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/python.yml)
 [![.NET](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CaiqueDourado/SimilarImageFinder/actions/workflows/dotnet.yml)
@@ -8,7 +8,7 @@
 
 [Leia em português](README.pt-BR.md)
 
-**Find duplicate and near-duplicate images, product photos in particular.** Perceptual hashes (aHash, dHash, pHash), border trimming, an exact search index for millions of hashes and a detector of placeholder images. One algorithm, two implementations: **Python and .NET return the same bits** for the same pixels, checked by shared test vectors.
+**Find duplicate and near-duplicate images, product photos in particular, with perceptual image hashing.** Perceptual hashes (aHash, dHash, pHash), border trimming, an exact search index for millions of hashes and a detector of placeholder images. One algorithm, two implementations: **Python and .NET return the same bits** for the same pixels, checked by shared test vectors.
 
 ```python
 from similar_image_finder import perceptual_hash, load_gray
@@ -30,6 +30,19 @@ var distance = a - b;
 similar-image-finder dupes ./photos -r --max-distance 6 --trim > groups.csv
 ```
 
+## What perceptual image hashing is
+
+A cryptographic hash (MD5, SHA-256) answers "are these two files identical?": change one pixel and the hash changes completely. A **perceptual hash** answers "do these two images look the same?". It reduces the picture to its coarse structure (a tiny grayscale version, or its lowest frequencies) and writes that structure as a short bit string, usually 64 bits. Two copies of the same photo, resized, recompressed or slightly brightened, get hashes that differ in only a few bits; different photos differ in many. Comparing images then means counting differing bits (the Hamming distance), which is cheap enough to do over millions of images.
+
+| | Cryptographic hash (SHA-256) | Perceptual hash (pHash) |
+|---|---|---|
+| Same file | equal | equal |
+| Same photo, resized or recompressed | completely different | a few bits apart |
+| Different photos | completely different | many bits apart |
+| Use | integrity, exact duplicates | near-duplicates, reverse image search, catalog matching |
+
+This library implements the three classic perceptual hashes: **aHash** (average), **dHash** (difference, or gradient) and **pHash** (discrete cosine transform), and measures which one to trust on product photos.
+
 ## Where it comes from
 
 From 2019 to 2024 I ran a catalog of **114.6 million offers from 7,179 Brazilian online stores** ([catalogo-produtos-ecommerce-brasil](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil)). Every product photo was downloaded (85.8 million download jobs on 12 to 15 machines), shrunk to 16×16 gray and hashed with SHA-256. The signature was one of the keys that linked the same product across stores, and an image found on more than 100 products was flagged as a placeholder.
@@ -38,7 +51,7 @@ It worked for what it could see: sister stores serving the same file, and "no ph
 
 1. **It only matched identical files.** SHA-256 changes completely when one pixel changes by 1, so a photo that a store resized or recompressed got a different signature.
 
-   <p align="center"><img src="docs/img/exact-vs-perceptual-hash.png" alt="The same photo at 1000 and 300 pixels: different SHA-256, dHash 1 bit apart" width="860"></p>
+   <p align="center"><img src="docs/img/exact-vs-perceptual-hash.png" alt="The same photo at 1000 and 300 pixels: different SHA-256 signatures, pHash 2 bits apart" width="860"></p>
 
 2. **The signature depended on the machine.** When the images were moved to AWS and hashed again, the values did not match the local ones. The old code hashed the *encoded* 16×16 thumbnail file, whose bytes can change with the encoder version; that is the most likely cause. Here every hash is computed from decoded pixels with integer arithmetic, so it is the same on any machine and in both languages.
 
