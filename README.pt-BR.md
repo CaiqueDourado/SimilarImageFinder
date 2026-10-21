@@ -15,7 +15,9 @@ from similar_image_finder import perceptual_hash
 
 a = perceptual_hash("loja-a/luminaria.jpg")
 b = perceptual_hash("loja-b/pendente-preto-600x600.webp")
-a - b          # distância de Hamming: 0-6 = mesma foto, 20+ = diferentes
+a - b          # distância de Hamming em 64 bits: 0-6 = mesma foto
+
+perceptual_hash("a.jpg", 16) - perceptual_hash("b.png", 16)   # 256 bits, para fotos de produto: até ~20 = mesma foto
 ```
 
 ```csharp
@@ -27,7 +29,7 @@ var distancia = a - b;
 ```
 
 ```bash
-similar-image-finder dupes ./fotos -r --max-distance 6 --trim > grupos.csv
+similar-image-finder dupes ./fotos -r --size 16 --max-distance 20 > grupos.csv
 ```
 
 ## O que é hash perceptual de imagens
@@ -80,14 +82,31 @@ Cópias editadas encontradas com até 6 bits de distância (hashes de 64 bits):
 | espelhar (não é duplicata) | 0% | 23% | 0% | 0% | 0% |
 | **produtos diferentes casados** | 0% | 7,65% | 1,92% | **0,22%** | **0,19%** |
 
+### Em fotos reais de produtos
+
+Fotos sintéticas não têm textura nem sombra, então também medi em **442 fotos reais do catálogo de 2019**: 99 grupos de produtos de calçados, sandálias, carteiras e cintos, do jeito que o crawler salvou (de 150 a 724 px, JPEG e PNG). 104 imagens aparecem em mais de um arquivo, o que dá 348 pares de arquivos com a mesma imagem e 97.113 pares que não são. Agrupei os arquivos da mesma imagem conferindo cada grupo a olho ([como](evaluation/real_photos.md)).
+
+As cópias diferem do jeito que as cópias de catálogo diferem: outro tamanho, outro formato, outra margem. A assinatura exata da grade 16×16 acha só **20 dos 348 pares (5,7%)**.
+
+<p align="center"><img src="docs/img/real-examples.pt-BR.png" alt="Três pares de arquivos com a mesma imagem em tamanhos e formatos diferentes: assinaturas exatas diferentes, pHash 256 diferindo de 8 a 14 bits. Um par de sapatos diferentes: pHash 64 idêntico, pHash 256 diferindo em 52 bits" width="820"></p>
+
+Todos os métodos acham as cópias. A diferença é quantas imagens **diferentes** cada um também junta:
+
+<p align="center"><img src="docs/img/real-photos.pt-BR.png" alt="Imagens diferentes casadas por engano: aHash 64 11.719, dHash 64 1.569, pHash 64 714, pHash 64 com trim 51, dHash 256 168, pHash 256 zero" width="820"></p>
+
+Com 64 bits, o pHash guarda só a forma geral do objeto. Dois sapatos diferentes fotografados na mesma pose, no fundo branco, podem ficar com **o mesmo hash de 64 bits**. Com `hash_size=16` (256 bits), o par de cópias mais distante ficou a 14 bits e o par de imagens diferentes mais próximo a 30, então 20 bits separa os dois com folga. As imagens diferentes mais próximas eram variações de cor de um mesmo modelo: a versão marrom e a preta de um sapato, fotografadas do mesmo jeito. Para um catálogo, essa é a resposta certa, porque são produtos diferentes.
+
+O hash de 256 bits também é mais rígido no outro sentido. Nas edições sintéticas, ele continua achando todo redimensionamento, recompressão e mudança de brilho, mas deixa de achar recortes, bordas acrescentadas, marcas d'água e rotações (o `trim()` recupera a maior parte dos recortes e bordas). O `trim()` falhou em fotos reais com fundo cinza de estúdio, que não é uniforme: uma cópia foi recortada e a outra não.
+
 O que eu tiro disso:
 
-- **Use pHash**, com distância de 6 a 8 bits. Ele acha cópias redimensionadas, recomprimidas e com brilho alterado, e raramente confunde produtos diferentes.
-- **Use `trim()` quando as margens variam** (a mesma foto com mais ou menos branco em volta, ou levemente recortada). Ele atrapalha com marca d'água e rotação, que mudam o retângulo do conteúdo.
+- **Para fotos de produto, use pHash com `hash_size=16` e distância de uns 20 bits** (`--size 16 --max-distance 20`). Cópias redimensionadas, recomprimidas ou salvas em outro formato são encontradas, e produtos diferentes, até variações de cor, ficam separados.
+- **Use 64 bits (distância de 6 a 8) quando precisar pegar edições**, como recortes, bordas, marcas d'água ou pequenas rotações, e confirme os casamentos com outro sinal, porque produtos diferentes vão casar.
+- **Use `trim()` só quando o fundo é liso** (branco ou de uma cor só) e as margens variam.
 - **A assinatura exata** só serve para arquivos idênticos. Fica para compatibilidade com dados antigos.
-- **Para casar produtos, a foto é um sinal, não uma prova.** No catálogo, a assinatura da imagem era uma das 12 chaves, ao lado de códigos de barras e nomes.
+- **Para casar produtos, a foto é um sinal, não uma prova.** No catálogo, a assinatura da imagem era uma das 12 chaves, ao lado de códigos de barras e nomes. O [DedupKit](https://github.com/CaiqueDourado/DedupKit) usa um hash de imagem como uma das regras e recusa pares cujos nomes dizem tamanhos ou cores diferentes.
 
-Os números vêm de fotos sintéticas; fotos reais têm textura e sombra. Rode o teste nas suas imagens antes de escolher um limite.
+Os dois testes estão em [`evaluation/`](evaluation/). As fotos reais pertencem às lojas e não estão no repositório; os rótulos e o script estão, para você repetir a medição nas suas fotos.
 
 ## Como o pHash funciona
 
@@ -179,7 +198,7 @@ python/        pacote, testes e linha de comando
 dotnet/        núcleo (sem dependências), leitor SkiaSharp, testes, exemplo
 spec/          ALGORITHMS.md: a especificação que as duas seguem
 testdata/      imagens e golden.json usados pelos dois conjuntos de testes
-evaluation/    o teste comparativo acima (evaluate.py, figures.py, resultados)
+evaluation/    os testes acima: sintético (evaluate.py, figures.py) e fotos reais (real_photos.py, rótulos, resultados)
 tools/         fotos sintéticas de produto e gerador dos dados de teste
 ```
 

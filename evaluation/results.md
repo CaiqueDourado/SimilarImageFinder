@@ -30,4 +30,22 @@
 | pHash + trim | 0.054% | 0.187% | 0.470% | 0.892% | 2 bits |
 | dHash + trim | 0.923% | 2.606% | 5.543% | 10.399% | 0 bits |
 
-Run time: 74 s.
+## 256-bit pHash (`hash_size=16`)
+
+| Edit | pHash 256 ≤20 | pHash 256 + trim ≤20 |
+|---|---:|---:|
+| resize 50% | 100% | 100% |
+| resize 25% | 100% | 94% |
+| JPEG q70 | 100% | 92% |
+| JPEG q30 | 100% | 71% |
+| resize 50% + JPEG q60 | 100% | 14% |
+| non-square resize | 100% | 100% |
+| crop 5% each side | 0% | 83% |
+| white border 10% | 0% | 78% |
+| brightness +15% | 99% | 97% |
+| watermark | 0% | 0% |
+| rotate 3 degrees | 4% | 0% |
+| mirror (not a duplicate) | 0% | 0% |
+| **different products matched** | 0.000% | 0.000% |
+
+Run time: 141 s.

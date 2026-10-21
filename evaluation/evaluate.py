@@ -127,6 +127,20 @@ def main() -> None:
     for m in METHODS:
         c = {p["threshold"]: p["false_positive_rate"] for p in results["methods"][m]["curve"]}
         lines.append(f"| {m} | {c[4]:.3%} | {c[6]:.3%} | {c[8]:.3%} | {c[10]:.3%} | {results['methods'][m]['negatives']['min']} bits |")
+    # 256-bit pHash (hash_size=16), the recommendation for product photos (see real_photos.md)
+    lines += ["", "## 256-bit pHash (`hash_size=16`)", "", "| Edit | pHash 256 ≤20 | pHash 256 + trim ≤20 |", "|---|---:|---:|"]
+    big = {"pHash 256": lambda g: sif.perceptual_hash(g, 16), "pHash 256 + trim": lambda g: sif.perceptual_hash(g.trim(), 16)}
+    big_hashes = {m: [fn(g) for g in gray] for m, fn in big.items()}
+    big_rows = {e: [] for e in list(EDITS) + list(EXTRA)}
+    for name, edit in {**EDITS, **EXTRA}.items():
+        edited = [sif.load_gray(edit(im)) for im in originals]
+        for m, fn in big.items():
+            d = np.array([fn(e) - h for e, h in zip(edited, big_hashes[m])])
+            big_rows[name].append(f"{(d <= 20).mean():.0%}")
+    for e, r in big_rows.items():
+        lines.append(f"| {e} | " + " | ".join(r) + " |")
+    neg_big = {m: np.array([a - b for a, b in itertools.combinations(hs, 2)]) for m, hs in big_hashes.items()}
+    lines.append("| **different products matched** | " + " | ".join(f"{(neg_big[m] <= 20).mean():.3%}" for m in big) + " |")
     lines += ["", f"Run time: {time.time() - t0:.0f} s."]
     Path(__file__).with_name("results.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))

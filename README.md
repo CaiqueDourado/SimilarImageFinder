@@ -15,7 +15,9 @@ from similar_image_finder import perceptual_hash, load_gray
 
 a = perceptual_hash("store-a/lamp.jpg")
 b = perceptual_hash("store-b/pendente-preto-600x600.webp")
-a - b          # Hamming distance: 0-6 = same picture, 20+ = different
+a - b          # Hamming distance of 64 bits: 0-6 = same picture
+
+perceptual_hash("a.jpg", 16) - perceptual_hash("b.png", 16)   # 256 bits, for product photos: up to ~20 = same picture
 ```
 
 ```csharp
@@ -27,7 +29,7 @@ var distance = a - b;
 ```
 
 ```bash
-similar-image-finder dupes ./photos -r --max-distance 6 --trim > groups.csv
+similar-image-finder dupes ./photos -r --size 16 --max-distance 20 > groups.csv
 ```
 
 ## What perceptual image hashing is
@@ -80,14 +82,31 @@ Share of edited copies found within 6 bits (64-bit hashes):
 | mirror (not a duplicate) | 0% | 23% | 0% | 0% | 0% |
 | **different products matched** | 0% | 7.65% | 1.92% | **0.22%** | **0.19%** |
 
+### On real product photos
+
+Synthetic photos have no textures or shadows, so I also measured on **442 real photos from the 2019 catalog**: 99 product groups of shoes, sandals, wallets and belts, as the crawler saved them (150 to 724 px, JPEG and PNG). 104 pictures appear in more than one file, giving 348 pairs of files that are the same picture and 97,113 pairs that are not. I grouped the same-picture files by eye ([how](evaluation/real_photos.md)).
+
+The copies differ the way catalog copies do: another size, another format, another margin. The exact signature of the 16×16 grid finds only **20 of the 348 pairs (5.7%)**.
+
+<p align="center"><img src="docs/img/real-examples.png" alt="Three pairs of files with the same picture at different sizes and formats: exact signatures differ, pHash 256 differs by 8 to 14 bits. One pair of different shoes: pHash 64 identical, pHash 256 differs by 52 bits" width="820"></p>
+
+Every method finds the copies. The difference is how many **different** pictures each one also matches:
+
+<p align="center"><img src="docs/img/real-photos.png" alt="Different pictures wrongly matched: aHash 64 11,719, dHash 64 1,569, pHash 64 714, pHash 64 with trim 51, dHash 256 168, pHash 256 zero" width="820"></p>
+
+With 64 bits, pHash only keeps the coarse shape of the object. Two different shoes photographed in the same pose on white can get **the same 64-bit hash**. With `hash_size=16` (256 bits), the farthest pair of copies was 14 bits apart and the closest pair of different pictures was 30, so 20 bits separates them with room on both sides. The closest different pictures were colour variants of one model: the brown and the black version of a shoe, shot the same way. That is the right answer for a catalog, because they are different products.
+
+The 256-bit hash is stricter in the other direction too. On the synthetic edits, it still finds every resize, recompression and brightness change, but no longer finds crops, added borders, watermarks or rotations (`trim()` brings back most crops and borders). `trim()` failed on real photos with a grey studio background, which is not uniform: one copy was trimmed and the other was not.
+
 What I take from it:
 
-- **Use pHash** with a distance of 6 to 8 bits. It finds resized, recompressed and brightened copies and rarely confuses different products.
-- **Use `trim()` when the margins vary** (the same photo with more or less white around it, or slightly cropped). It hurts with watermarks and rotations, which change the bounding box.
+- **For product photos, use pHash with `hash_size=16` and a distance of about 20 bits** (`--size 16 --max-distance 20`). Copies resized, recompressed or saved in another format are found, and different products, even colour variants, stay apart.
+- **Use 64 bits (distance 6 to 8) when you need to catch edits** such as crops, borders, watermarks or small rotations, and confirm the matches with another signal, because different products will match.
+- **Use `trim()` only when the background is plain** (white or one colour) and the margins vary.
 - **The exact signature** is only for identical files. Keep it for compatibility with old data.
-- **For product matching, a photo is one signal, not proof.** In the catalog, the image signature was one of 12 keys, next to barcodes and names.
+- **For product matching, a photo is one signal, not proof.** In the catalog, the image signature was one of 12 keys, next to barcodes and names. [DedupKit](https://github.com/CaiqueDourado/DedupKit) takes an image hash as one of its rules and refuses pairs whose names state different sizes or colours.
 
-These numbers come from synthetic photos; real photos have textures and shadows. Run the benchmark on your own images before choosing a threshold.
+Both benchmarks are in [`evaluation/`](evaluation/). The real photos belong to the stores and are not in the repository; the labels and the script are, so you can run the same measurement on your own photos.
 
 ## How pHash works
 
@@ -179,7 +198,7 @@ python/        package, tests and CLI
 dotnet/        core (no dependencies), SkiaSharp loader, tests, sample
 spec/          ALGORITHMS.md: the specification both follow
 testdata/      images and golden.json shared by both test suites
-evaluation/    the benchmark above (evaluate.py, figures.py, results)
+evaluation/    the benchmarks above: synthetic (evaluate.py, figures.py) and real photos (real_photos.py, labels, results)
 tools/         synthetic product photos and test data generator
 ```
 
