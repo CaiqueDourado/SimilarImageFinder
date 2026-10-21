@@ -47,7 +47,7 @@ This library implements the three classic perceptual hashes: **aHash** (average)
 
 ## Where it comes from
 
-From 2019 to 2024 I ran a catalog of **114.6 million offers from 7,179 Brazilian online stores** ([catalogo-produtos-ecommerce-brasil](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil)). Every product photo was downloaded (85.8 million download jobs on 12 to 15 machines), shrunk to 16×16 gray and hashed with SHA-256. The signature was one of the keys that linked the same product across stores, and an image found on more than 100 products was flagged as a placeholder.
+From 2019 to 2024 I ran a catalog of **114.6 million offers from 7,179 Brazilian online stores** ([GitHub](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil), full data on [Kaggle](https://www.kaggle.com/datasets/caiquedourado/catalogo-produtos-ecommerce-brasil)). Every product photo was downloaded (85.8 million download jobs on 12 to 15 machines), shrunk to 16×16 gray and hashed with SHA-256. The signature was one of the keys that linked the same product across stores, and an image found on more than 100 products was flagged as a placeholder.
 
 It worked for what it could see: sister stores serving the same file, and "no photo" images. Two things it could not do became this library:
 

@@ -47,7 +47,7 @@ Esta biblioteca implementa os três hashes perceptuais clássicos: **aHash** (m�
 
 ## De onde veio
 
-Entre 2019 e 2024 eu mantive um catálogo de **114,6 milhões de ofertas de 7.179 lojas brasileiras** ([catalogo-produtos-ecommerce-brasil](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil)). Cada foto de produto foi baixada (85,8 milhões de tarefas de download em 12 a 15 máquinas), reduzida a 16×16 em cinza e passada por SHA-256. A assinatura era uma das chaves que ligavam o mesmo produto em lojas diferentes, e uma imagem presente em mais de 100 produtos era marcada como genérica.
+Entre 2019 e 2024 eu mantive um catálogo de **114,6 milhões de ofertas de 7.179 lojas brasileiras** ([GitHub](https://github.com/CaiqueDourado/catalogo-produtos-ecommerce-brasil), dados completos no [Kaggle](https://www.kaggle.com/datasets/caiquedourado/catalogo-produtos-ecommerce-brasil)). Cada foto de produto foi baixada (85,8 milhões de tarefas de download em 12 a 15 máquinas), reduzida a 16×16 em cinza e passada por SHA-256. A assinatura era uma das chaves que ligavam o mesmo produto em lojas diferentes, e uma imagem presente em mais de 100 produtos era marcada como genérica.
 
 Ela funcionava para o que conseguia ver: lojas do mesmo grupo servindo o mesmo arquivo e imagens "sem foto". Duas coisas que ela não fazia viraram esta biblioteca:
 
