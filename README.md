@@ -8,6 +8,8 @@
 
 [Leia em português](README.pt-BR.md)
 
+![SimilarImageFinder](docs/img/cover.png)
+
 **Find duplicate and near-duplicate images, product photos in particular, with perceptual image hashing.** Perceptual hashes (aHash, dHash, pHash), border trimming, an exact search index for millions of hashes and a detector of placeholder images. One algorithm, two implementations: **Python and .NET return the same bits** for the same pixels, checked by shared test vectors.
 
 ```python

@@ -8,6 +8,8 @@
 
 [Read in English](README.md)
 
+![SimilarImageFinder](docs/img/cover.pt-BR.png)
+
 **Encontra imagens duplicadas e quase duplicadas, em especial fotos de produto, com hash perceptual de imagens (perceptual image hashing).** Hashes perceptuais (aHash, dHash, pHash), remoção de borda, um índice de busca exata para milhões de hashes e um detector de imagens genéricas. Um algoritmo, duas implementações: **Python e .NET devolvem os mesmos bits** para os mesmos pixels, conferido por vetores de teste compartilhados.
 
 ```python
