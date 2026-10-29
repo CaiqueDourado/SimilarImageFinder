@@ -193,6 +193,10 @@ dotnet add reference SimilarImageFinder/dotnet/src/SimilarImageFinder.SkiaSharp/
 
 On Linux, also add `SkiaSharp.NativeAssets.Linux.NoDependencies`. Releases attach the `.nupkg` and the Python wheel.
 
+## Article
+
+- [Finding the same photo across 7,179 stores](https://github.com/CaiqueDourado/articles/blob/main/image-similarity/README.md): the catalog story behind this library and the measurements.
+
 ## Repository
 
 ```
