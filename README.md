@@ -195,7 +195,7 @@ On Linux, also add `SkiaSharp.NativeAssets.Linux.NoDependencies`. Releases attac
 
 ## Article
 
-- [Finding the same photo across 7,179 stores](https://github.com/CaiqueDourado/articles/blob/main/image-similarity/README.md): the catalog story behind this library and the measurements.
+- [Finding the same photo across 7,179 stores](https://medium.com/@caiquedourado/finding-the-same-photo-across-7-179-stores-a4e94bc93777) (Medium): the catalog story behind this library and the measurements.
 
 ## Repository
 

@@ -195,7 +195,7 @@ No Linux, acrescente também o `SkiaSharp.NativeAssets.Linux.NoDependencies`. As
 
 ## Artigo
 
-- [Achando a mesma foto em 7.179 lojas](https://github.com/CaiqueDourado/articles/blob/main/image-similarity/README.pt-BR.md): a história do catálogo por trás desta biblioteca e as medições.
+- [Achando a mesma foto em 7.179 lojas](https://github.com/CaiqueDourado/articles/blob/main/image-similarity/README.pt-BR.md) ([em inglês no Medium](https://medium.com/@caiquedourado/finding-the-same-photo-across-7-179-stores-a4e94bc93777)): a história do catálogo por trás desta biblioteca e as medições.
 
 ## Repositório
 
